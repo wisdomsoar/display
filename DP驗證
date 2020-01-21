@@ -1,0 +1,32 @@
+ref: http://www.unigraf-china.cn/unigraf-blog/testing-displayport-sources-and-sinks/dp/
+
+DP中的驗證需要用到哪些設備？
+PUBLISHED 14-11-20 IN CATEGORY TESTING DISPLAYPORT SOURCES AND SINKS • WRITER JUHA SAARINEN
+DP中的驗證需要用到哪些設備？
+在視頻和音訊內容通過DP link發送並顯示在顯示幕上之前，在DP source和sink（可能還有分支裝置）之間已經進行了大量通信。
+DP主資料Link中的多媒體內容傳輸與資料link的類似程度高於DVI或HDMI。另外連接之前的握手也比純外掛程式要複雜得多。請參見下文中關於DP介面基本功能的簡要定義以及調試期間需要驗證的問題。
+AUX Channel
+DP設有專用匯流排，即AUX Channel，用於source和sink之間的握手。因為source是過程的控制裝置，它為sink提出請求。sink與source進行通信的唯一途徑是在熱插拔檢測（HPD）信號中發出一個脈衝。
+因為AUX Channel是source / sink通信的關鍵部分，所以理解握手過程的核心在於記錄AUX Channel通信。AUX Channel Monitor工具是所有DP協議相關工程師和設計師必須配備的設備。
+DPCD
+DP source和sink之間的資訊傳送通過對sink上的DisplayPort配置資料（DPCD）寄存器進行讀寫來實現。
+通過讀取DPCD中的特定寄存器，source將知曉sink的性能。在建立資料link，即link訓練期間，source對DPCD進行寫操作，以指明目標link的配置，另外sink也將各個link訓練階段的結果寫到此處。
+在數十個DPCD寄存器中調用每個位的詳細含義非常具有挑戰性。因此，對於DP偵錯工具的生產率來說重要的是，所用工具能夠輕鬆地根據VESA DP技術規範等標準的常用術語解析AUX讀寫操作中的DPCD內容。
+EDID
+擴展顯示標識資料（EDID）是一個結構化資料塊，定義了DP接收裝置的性能。它定義了構造、型號名稱、螢幕尺寸和顏色格式。在連接到sink之後，source首先要執行的操作之一就是讀取sink的EDID資料。
+對DP source和sink之間的通信起到重要作用的是EDID定義了sink以及sink支持的視訊模式的原始解析度。在選擇將要發送給sink的內容的格式時，該資料是source的基礎。解析度、所用視訊模式、顏色格式、音訊格式等。
+通過改變測試sink的EDID，工程師可以輕鬆驗證sink的靈活性。易於使用的EDID編輯器可向用戶說明各個比特位，是另外一種非常重要且節省時間的工具。
+主Link配置
+根據source需要發送給sink的內容以及從EDID和DPCD讀取來的sink性能，source可確定發送內容的格式以及用於傳輸的資料link配置。一個良好設計的source將嘗試優化link的使用，以達到將功耗降至最低等目的。因此其目標是使用盡可能少的通道和盡可能低的電壓擺動。
+在link訓練期間，source使用其首選配置啟動實際訓練過程，在link建立之前通過反覆運算法對其進行改變。一旦link建立，source便可開始發送內容本身。
+使用者可以在AUX Channel Monitor的説明下評估通信記錄，進而驗證link培訓過程是如何執行的。此外，工具的易用性將有助於工程師保持注意力集中。因為一對具有多流功能的source和sink之間的link訓練過程可包含上百個讀寫操作，諸如突出顯示資料以便於閱讀、過濾資料以專注於基礎資料等功能至關重要。
+通過改變sink或source的性能因素，工程師可以驗證其DUT sink或DUTsource是否按預期工作。VESA定義的Link Compliance Test中的各種測試事實上可驗證sink或source是否按實現良好互通性所需的方式進行工作。一個良好的工具允許編輯和保存性能資料，供以後使用。
+MSA和SDP
+在內容傳輸期間，source還發送額外資料：主資料流程屬性（MSA）和可選的次級資料包（SDP）。
+MSA是source向sink通知其提供的視訊模式詳細資訊的途徑。工程師的一項任務是驗證MSA與實際視訊模式是否匹配。
+SDP可包含多媒體內容的音訊部分以及所謂的INFOFRAMES。INFOFRAMES是定義視頻和音訊結構的資料——sink進行解讀的方式。工程師將進行相同任務：驗證發送的資料與內容是否匹配。
+邊帶消息
+當一個具有多流（MST）功能的source通過其面向下游埠中的sink與具有MST功能的分支裝置連接時，source可使用邊帶消息傳輸（邊帶MSG）向下游sink發送消息。
+在MST環境中，source為設備中的所有sink提供流內容。邊帶MSG系統用於獲得可用sink的結構和性能資訊，並向它們發送命令消息。
+一個可以提供易於監控和理解的邊帶MSG資料的工具將極大加快調試工程師的工作速度。
+
